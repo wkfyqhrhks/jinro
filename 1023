@@ -1,0 +1,699 @@
+import React, { useState } from 'react';
+import { BarChart3, Sparkles, TrendingUp, Award, ArrowRight, ChevronRight, Home } from 'lucide-react';
+
+const CareerInterestSurvey = () => {
+  const [currentPage, setCurrentPage] = useState('intro');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [results, setResults] = useState(null);
+
+  const questions = [
+    // 실재형 (R) - 6문항
+    { id: 1, type: 'R', text: '3D 프린터나 로봇과 같은 기계를 조작하여 결과물을 만드는 활동에 흥미를 느낀다.', emoji: '⚙️', character: '미래 엔지니어' },
+    { id: 2, type: 'R', text: '직접 몸을 움직여 야외에서 식물을 기르거나 동물을 돌보는 활동을 즐긴다.', emoji: '🌱', character: '바이오 전문가' },
+    { id: 3, type: 'R', text: '복잡하게 얽힌 전선이나 기계 장치의 문제를 찾아내고 수리하는 일에 몰두한다.', emoji: '🔧', character: '유지보수 기술자' },
+    { id: 4, type: 'R', text: '실제 건축물이나 인테리어 모형을 설계하고 제작하는 작업이 재미있다.', emoji: '🏗️', character: '스마트 건설가' },
+    { id: 5, type: 'R', text: '위험을 감수하고서라도 보안, 소방, 응급구조 등 신체 활동이 요구되는 일을 하고 싶다.', emoji: '🚨', character: '안전 요원' },
+    { id: 6, type: 'R', text: '가상현실(VR) 장비를 이용해 기계 작동 시뮬레이션을 경험하는 것이 좋다.', emoji: '🥽', character: 'VR 트레이너' },
+    
+    // 탐구형 (I) - 6문항
+    { id: 7, type: 'I', text: '수많은 데이터나 통계 자료를 분석하여 숨겨진 규칙이나 의미를 찾아내는 것에 흥미가 있다.', emoji: '📊', character: '빅데이터 분석가' },
+    { id: 8, type: 'I', text: '인간의 심리, 뇌 과학 등 복잡한 현상의 원리를 깊이 있게 연구하고 싶다.', emoji: '🧠', character: '인지 과학자' },
+    { id: 9, type: 'I', text: '과학 실험이나 가설 검증 과정을 통해 새로운 지식을 발견하는 것이 즐겁다.', emoji: '🔬', character: '연구원' },
+    { id: 10, type: 'I', text: 'AI 알고리즘이 오류를 일으키는 원인을 논리적으로 파헤치고 해결하는 과정을 좋아한다.', emoji: '🤖', character: 'AI 디버거' },
+    { id: 11, type: 'I', text: '미래 사회의 변화나 우주의 신비 등 미지의 영역에 대해 끊임없이 질문을 던진다.', emoji: '🔭', character: '미래학자' },
+    { id: 12, type: 'I', text: '복잡한 논리 게임이나 추리 소설을 읽으며 정보를 조합하고 결론을 도출하는 활동을 좋아한다.', emoji: '🔍', character: '논리학자' },
+    
+    // 예술형 (A) - 6문항
+    { id: 13, type: 'A', text: '그림, 음악, 글쓰기 등 창의적인 방법으로 나의 생각이나 감정을 표현하는 것을 좋아한다.', emoji: '🎨', character: '멀티 아티스트' },
+    { id: 14, type: 'A', text: '디지털 드로잉이나 미디어 아트 등 새로운 기술을 활용한 예술 활동에 관심이 많다.', emoji: '💻', character: '미디어 아티스트' },
+    { id: 15, type: 'A', text: '영상 편집, 웹툰 제작, 게임 스토리 기획 등 문화 콘텐츠를 만드는 일을 하고 싶다.', emoji: '🎬', character: '콘텐츠 크리에이터' },
+    { id: 16, type: 'A', text: '공연, 패션, 공간 디자인 등 시각적이거나 청각적인 아름다움을 만들어내는 일에 매력을 느낀다.', emoji: '✨', character: '디자이너' },
+    { id: 17, type: 'A', text: '정해진 규칙 없이 자유롭고 개성 있는 작업 환경에서 일하는 것을 선호한다.', emoji: '🦋', character: '자유 영혼' },
+    { id: 18, type: 'A', text: '대중에게 재미와 감동을 줄 수 있는 예술 작품이나 창작물을 만드는 것이 나의 목표이다.', emoji: '🎭', character: '감성 전달자' },
+    
+    // 사회형 (S) - 6문항
+    { id: 19, type: 'S', text: '취약 계층이나 도움이 필요한 사람들을 위해 봉사하고 문제를 해결해주는 일에 보람을 느낀다.', emoji: '🤝', character: '사회 봉사자' },
+    { id: 20, type: 'S', text: '친구들의 고민을 들어주고 정서적인 지지를 해주는 역할이 편안하다.', emoji: '💬', character: '심리 상담가' },
+    { id: 21, type: 'S', text: '다른 사람에게 새로운 지식이나 기술을 재미있고 효과적으로 가르치는 방법을 연구한다.', emoji: '📚', character: '교육 코치' },
+    { id: 22, type: 'S', text: '의료 및 보건 분야에서 사람들의 건강과 회복을 돕는 역할을 하고 싶다.', emoji: '⚕️', character: '헬스케어 전문가' },
+    { id: 23, type: 'S', text: '다양한 배경과 문화를 가진 사람들과 협력하여 공동의 목표를 달성하는 활동을 좋아한다.', emoji: '🌍', character: '글로벌 협력가' },
+    { id: 24, type: 'S', text: '온라인 커뮤니티를 운영하며 사람들의 의견을 모으고 갈등을 조정하는 역할을 즐긴다.', emoji: '💻', character: '커뮤니티 매니저' },
+    
+    // 진취형 (E) - 6문항
+    { id: 25, type: 'E', text: '새로운 사업 아이디어나 제품을 기획하고 사람들에게 소개하여 구매를 설득하는 일을 잘한다.', emoji: '💡', character: '스타트업 CEO' },
+    { id: 26, type: 'E', text: '팀 프로젝트에서 리더 역할을 맡아 사람들에게 동기를 부여하고 이끄는 것을 좋아한다.', emoji: '👑', character: '카리스마 리더' },
+    { id: 27, type: 'E', text: '주식, 부동산, 가상화폐 등 경제적 이익을 창출하는 금융 및 투자 활동에 관심이 많다.', emoji: '💰', character: '핀테크 전문가' },
+    { id: 28, type: 'E', text: '여러 사람 앞에서 발표하거나 연설을 할 때 자신감이 있으며, 설득력을 높이는 방법을 고민한다.', emoji: '🎤', character: '협상가' },
+    { id: 29, type: 'E', text: '글로벌 시장의 트렌드를 파악하고 새로운 비즈니스 기회를 찾아내는 일을 하고 싶다.', emoji: '🌐', character: '국제 비즈니스맨' },
+    { id: 30, type: 'E', text: '개인 브랜딩을 구축하거나 소셜 미디어를 통해 나의 영향력을 키우는 활동을 즐긴다.', emoji: '📱', character: '인플루언서' },
+    
+    // 관습형 (C) - 6문항
+    { id: 31, type: 'C', text: '복잡한 서류나 대규모 데이터베이스를 분류하고 체계적으로 관리하는 일에 능숙하다.', emoji: '🗂️', character: '정보 관리자' },
+    { id: 32, type: 'C', text: '정해진 규칙과 절차에 따라 업무를 완벽하게 처리할 때 안정감과 만족감을 느낀다.', emoji: '✅', character: '행정 전문가' },
+    { id: 33, type: 'C', text: '재무 상태를 분석하고 예산 계획을 세우는 등 돈과 관련된 수치를 다루는 일이 좋다.', emoji: '💵', character: '회계사' },
+    { id: 34, type: 'C', text: '정보 보안이나 개인 정보 보호 등 시스템의 안전성을 확보하는 일에 책임감을 느낀다.', emoji: '🔒', character: '보안 전문가' },
+    { id: 35, type: 'C', text: '문서 작성, 보고서 포맷팅 등 정보를 깔끔하고 보기 좋게 정리하는 것에 신경 쓴다.', emoji: '📋', character: '기획 비서' },
+    { id: 36, type: 'C', text: '새로운 자동화 도구나 업무 관리 시스템을 도입하여 효율성을 높이는 방법을 찾는다.', emoji: '⚡', character: '업무 효율화 전문가' },
+  ];
+
+  const typeInfo = {
+    R: { name: '실재형', subtitle: 'Realistic - Doers', color: 'bg-blue-500', desc: '손과 기계를 다루는 활동' },
+    I: { name: '탐구형', subtitle: 'Investigative - Thinkers', color: 'bg-purple-500', desc: '분석하고 연구하는 활동' },
+    A: { name: '예술형', subtitle: 'Artistic - Creators', color: 'bg-pink-500', desc: '창작하고 표현하는 활동' },
+    S: { name: '사회형', subtitle: 'Social - Helpers', color: 'bg-green-500', desc: '타인을 돕고 교류하는 활동' },
+    E: { name: '진취형', subtitle: 'Enterprising - Persuaders', color: 'bg-orange-500', desc: '영향력을 발휘하고 주도하는 활동' },
+    C: { name: '관습형', subtitle: 'Conventional - Organizers', color: 'bg-teal-500', desc: '정보를 정리하고 체계화하는 활동' },
+  };
+
+  const careerPaths = {
+    'IA': {
+      title: 'AI 기반 콘텐츠 크리에이터',
+      jobs: ['데이터 시각화 디자이너', 'UX 리서처', '미디어 아티스트', 'AI 아트 디렉터'],
+      roadmap: {
+        high: '미술, 정보, 미디어 교과 선택',
+        college: '융합디자인, 데이터사이언스, 미디어 커뮤니케이션 전공',
+        experience: 'UI/UX 공모전 참여, 포트폴리오 제작, 디자인 씽킹 워크숍'
+      },
+      skills: ['창의적 문제해결', '데이터 리터러시', '디자인 사고'],
+      growth: 85
+    },
+    'IE': {
+      title: 'AI 스타트업 전략가',
+      jobs: ['AI 기획자', '테크 PM', '비즈니스 애널리스트', '디지털 컨설턴트'],
+      roadmap: {
+        high: '수학, 인공지능 기초, 경제 교과 선택',
+        college: '경영정보, 컴퓨터공학, 산업공학 전공',
+        experience: '창업 동아리, 비즈니스 모델링 프로젝트, 해커톤 참여'
+      },
+      skills: ['논리적 사고', '비즈니스 감각', '데이터 분석'],
+      growth: 92
+    },
+    'AE': {
+      title: '브랜드 마케터/인플루언서',
+      jobs: ['디지털 마케터', '브랜드 매니저', '콘텐츠 기획자', 'SNS 전략가'],
+      roadmap: {
+        high: '화법과 작문, 심리학, 사회문화 교과 선택',
+        college: '광고홍보, 문화콘텐츠, 마케팅 전공',
+        experience: '소셜 미디어 채널 운영, 마케팅 인턴십, 브랜딩 프로젝트'
+      },
+      skills: ['창의성', '커뮤니케이션', '트렌드 분석'],
+      growth: 78
+    },
+    'SE': {
+      title: '소셜 임팩트 리더',
+      jobs: ['사회적기업가', 'CSR 매니저', '비영리 조직 기획자', '임팩트 투자 전문가'],
+      roadmap: {
+        high: '사회문화, 생활과 윤리, 경제 교과 선택',
+        college: '사회복지, 경영학, 국제개발협력 전공',
+        experience: '봉사 프로젝트 리딩, 사회혁신 캠프, 크라우드펀딩 기획'
+      },
+      skills: ['공감 능력', '리더십', '문제해결력'],
+      growth: 73
+    },
+    'RI': {
+      title: '첨단 기술 연구자',
+      jobs: ['로봇공학자', 'IoT 개발자', '바이오 엔지니어', '우주항공 기술자'],
+      roadmap: {
+        high: '물리, 화학, 정보 교과 선택',
+        college: '기계공학, 전자공학, 생명공학 전공',
+        experience: '과학 동아리, 발명품 제작, 연구 프로젝트 참여'
+      },
+      skills: ['기술적 이해', '실험 설계', '논리적 사고'],
+      growth: 88
+    },
+    'RS': {
+      title: '헬스케어 기술 전문가',
+      jobs: ['의료기기 엔지니어', '재활 치료사', '스포츠 트레이너', '응급구조사'],
+      roadmap: {
+        high: '생명과학, 체육, 보건 교과 선택',
+        college: '의공학, 물리치료학, 응급구조학 전공',
+        experience: '의료 봉사, 응급처치 자격증, 재활 센터 실습'
+      },
+      skills: ['신체 활동성', '공감 능력', '위기 대응'],
+      growth: 81
+    },
+    'IS': {
+      title: '인간 중심 연구자',
+      jobs: ['심리학자', '교육 연구원', '인지과학자', 'UX 리서처'],
+      roadmap: {
+        high: '심리학, 사회문화, 생명과학 교과 선택',
+        college: '심리학, 교육학, 인지과학 전공',
+        experience: '심리 상담 봉사, 연구 보조, 사용자 조사 프로젝트'
+      },
+      skills: ['분석력', '공감 능력', '연구 설계'],
+      growth: 76
+    },
+    'IC': {
+      title: '데이터 사이언티스트',
+      jobs: ['빅데이터 분석가', 'AI 엔지니어', '정보보안 연구원', '퀀트 애널리스트'],
+      roadmap: {
+        high: '수학, 정보, 통계 교과 선택',
+        college: '통계학, 컴퓨터공학, 데이터사이언스 전공',
+        experience: '데이터 분석 공모전, 코딩 부트캠프, 오픈소스 프로젝트'
+      },
+      skills: ['데이터 분석', '프로그래밍', '논리적 사고'],
+      growth: 95
+    },
+    'AS': {
+      title: '힐링 콘텐츠 크리에이터',
+      jobs: ['음악 치료사', '예술 치료사', '문화기획자', '커뮤니티 아티스트'],
+      roadmap: {
+        high: '음악, 미술, 심리학 교과 선택',
+        college: '예술치료학, 문화예술교육학, 상담심리학 전공',
+        experience: '예술 봉사, 치료 프로그램 보조, 커뮤니티 프로젝트'
+      },
+      skills: ['창의성', '공감 능력', '감성 표현'],
+      growth: 71
+    },
+    'AC': {
+      title: '디지털 아카이브 전문가',
+      jobs: ['큐레이터', '디지털 아키비스트', '콘텐츠 매니저', '박물관 전문가'],
+      roadmap: {
+        high: '미술, 역사, 정보 교과 선택',
+        college: '문헌정보학, 박물관학, 문화재학 전공',
+        experience: '전시 기획, 아카이빙 프로젝트, 문화재 답사'
+      },
+      skills: ['창의성', '체계적 사고', '디지털 리터러시'],
+      growth: 68
+    },
+    'SC': {
+      title: '행정 서비스 전문가',
+      jobs: ['공무원', '인사 담당자', '행정사', '비서'],
+      roadmap: {
+        high: '사회문화, 정치와 법, 경제 교과 선택',
+        college: '행정학, 경영학, 법학 전공',
+        experience: '학생회 활동, 행정 인턴십, 공모전 기획'
+      },
+      skills: ['조직력', '공감 능력', '업무 처리'],
+      growth: 65
+    },
+    'EC': {
+      title: '금융 전략가',
+      jobs: ['재무 분석가', '투자 상담사', '회계사', '세무사'],
+      roadmap: {
+        high: '경제, 수학, 정보 교과 선택',
+        college: '경영학, 회계학, 금융학 전공',
+        experience: '모의 투자 대회, 회계 자격증, 금융 인턴십'
+      },
+      skills: ['리더십', '수리 능력', '재무 분석'],
+      growth: 82
+    },
+    'RA': {
+      title: '메이커 크리에이터',
+      jobs: ['제품 디자이너', '3D 모델러', '건축가', '인테리어 디자이너'],
+      roadmap: {
+        high: '미술, 기술가정, 물리 교과 선택',
+        college: '산업디자인, 건축학, 실내디자인 전공',
+        experience: '메이커 동아리, 디자인 공모전, 3D 프린팅 프로젝트'
+      },
+      skills: ['기술적 능력', '창의성', '공간 감각'],
+      growth: 79
+    },
+    'RC': {
+      title: '스마트 시스템 운영자',
+      jobs: ['설비 관리자', '품질 관리자', '생산 관리자', '시스템 엔지니어'],
+      roadmap: {
+        high: '기술가정, 정보, 수학 교과 선택',
+        college: '산업공학, 기계공학, 전기공학 전공',
+        experience: '생산 현장 실습, 자격증 취득, 자동화 프로젝트'
+      },
+      skills: ['기술적 능력', '체계적 사고', '품질 관리'],
+      growth: 74
+    },
+    'RE': {
+      title: '현장 리더',
+      jobs: ['건설 현장 감독', '물류 관리자', '안전 관리자', '스포츠 에이전트'],
+      roadmap: {
+        high: '체육, 기술가정, 경영 교과 선택',
+        college: '건설공학, 물류학, 안전공학 전공',
+        experience: '현장 실습, 안전 교육, 프로젝트 관리'
+      },
+      skills: ['신체 활동성', '리더십', '위기 관리'],
+      growth: 72
+    }
+  };
+
+  const handleAnswer = (questionId, value) => {
+    setAnswers({ ...answers, [questionId]: value });
+  };
+
+  const calculateResults = () => {
+    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+    
+    questions.forEach(q => {
+      if (answers[q.id]) {
+        scores[q.type] += answers[q.id];
+      }
+    });
+
+    const sortedTypes = Object.entries(scores)
+      .sort(([, a], [, b]) => b - a)
+      .map(([type, score]) => ({ type, score, percentage: (score / 30) * 100 }));
+
+    const topTypes = sortedTypes.slice(0, 3);
+    const code = topTypes[0].type + topTypes[1].type;
+    const career = careerPaths[code] || careerPaths[code.split('').reverse().join('')] || careerPaths['IA'];
+
+    setResults({ topTypes, code, career, allScores: sortedTypes });
+    setCurrentPage('results');
+  };
+
+  const IntroPage = () => (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="inline-block p-4 bg-white rounded-full shadow-lg mb-6">
+            <Sparkles className="w-12 h-12 text-purple-600" />
+          </div>
+          <h1 className="text-5xl font-bold text-gray-800 mb-4">
+            🌟 미래를 탐험하는<br/>나의 흥미 코드 찾기
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">진로 탐색 인포그래픽 설문지</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl p-10 mb-8">
+          <div className="grid md:grid-cols-2 gap-8 mb-10">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-purple-100 rounded-full p-2 mt-1">
+                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">RIASEC 모델 기반</h3>
+                  <p className="text-gray-600 text-sm">홀랜드 6가지 흥미 유형으로 분석</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="bg-pink-100 rounded-full p-2 mt-1">
+                  <TrendingUp className="w-5 h-5 text-pink-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">미래 트렌드 반영</h3>
+                  <p className="text-gray-600 text-sm">빅데이터와 사회 변화를 고려한 문항</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-100 rounded-full p-2 mt-1">
+                  <Award className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">맞춤형 진로 로드맵</h3>
+                  <p className="text-gray-600 text-sm">고교-대학-경험까지 구체적 경로 제시</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="bg-green-100 rounded-full p-2 mt-1">
+                  <Sparkles className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-800">3D 캐릭터 카드</h3>
+                  <p className="text-gray-600 text-sm">나만의 직업 캐릭터 이미지 제공</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-8">
+            <h3 className="font-bold text-lg text-gray-800 mb-4">📊 검사 정보</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-3xl font-bold text-purple-600">36</div>
+                <div className="text-sm text-gray-600">문항 수</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-pink-600">5분</div>
+                <div className="text-sm text-gray-600">소요 시간</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-blue-600">6개</div>
+                <div className="text-sm text-gray-600">흥미 유형</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+            <h3 className="font-bold text-lg text-gray-800 mb-4">🎯 6가지 흥미 유형</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {Object.entries(typeInfo).map(([key, info]) => (
+                <div key={key} className="bg-white rounded-xl p-4 border-2 border-gray-100">
+                  <div className={`${info.color} text-white font-bold text-center py-2 rounded-lg mb-2`}>
+                    {info.name} ({key})
+                  </div>
+                  <p className="text-xs text-gray-600 text-center">{info.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => setCurrentPage('survey')}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-12 py-4 rounded-full text-xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all inline-flex items-center space-x-3"
+            >
+              <span>검사 시작하기</span>
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <p className="text-sm text-gray-500 mt-4">
+              아래 활동들을 접했을 때, 평소 나의 생각과 얼마나 일치하는지<br/>솔직하게 체크해 보세요!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const SurveyPage = () => {
+    const question = questions[currentQuestion];
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const isAnswered = answers[question.id] !== undefined;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 md:p-8">
+        <div className="max-w-3xl mx-auto">
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-gray-700">
+                문항 {currentQuestion + 1} / {questions.length}
+              </span>
+              <span className="text-sm font-semibold text-purple-600">
+                {Math.round(progress)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-gradient-to-r from-purple-600 to-pink-600 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Question Card */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+            <div className="text-center mb-8">
+              <div className={`inline-block ${typeInfo[question.type].color} text-white px-6 py-2 rounded-full text-sm font-bold mb-4`}>
+                {typeInfo[question.type].name} ({question.type})
+              </div>
+              <div className="text-6xl mb-6">{question.emoji}</div>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 leading-relaxed">
+                {question.text}
+              </h2>
+              <p className="text-sm text-gray-500 italic">💼 {question.character}</p>
+            </div>
+
+            {/* Rating Scale */}
+            <div className="space-y-3 mb-8">
+              {[
+                { value: 5, label: '매우 그렇다', color: 'from-green-500 to-emerald-600' },
+                { value: 4, label: '그렇다', color: 'from-blue-500 to-cyan-600' },
+                { value: 3, label: '보통이다', color: 'from-yellow-500 to-orange-500' },
+                { value: 2, label: '그렇지 않다', color: 'from-orange-500 to-red-500' },
+                { value: 1, label: '전혀 그렇지 않다', color: 'from-red-500 to-pink-600' },
+              ].map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => handleAnswer(question.id, option.value)}
+                  className={`w-full p-4 rounded-xl font-semibold transition-all transform hover:scale-102 ${
+                    answers[question.id] === option.value
+                      ? `bg-gradient-to-r ${option.color} text-white shadow-lg scale-105`
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{option.label}</span>
+                    <span className="text-2xl">{option.value}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between items-center pt-6 border-t">
+              <button
+                onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
+                disabled={currentQuestion === 0}
+                className="px-6 py-3 rounded-full font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed text-gray-600 hover:bg-gray-100"
+              >
+                ← 이전
+              </button>
+              
+              {currentQuestion < questions.length - 1 ? (
+                <button
+                  onClick={() => setCurrentQuestion(currentQuestion + 1)}
+                  disabled={!isAnswered}
+                  className={`px-8 py-3 rounded-full font-semibold transition-all transform ${
+                    isAnswered
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg hover:scale-105'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  다음 →
+                </button>
+              ) : (
+                <button
+                  onClick={calculateResults}
+                  disabled={!isAnswered}
+                  className={`px-8 py-3 rounded-full font-semibold transition-all transform ${
+                    isAnswered
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-lg hover:scale-105'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  결과 보기 ✨
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ResultsPage = () => {
+    if (!results) return null;
+
+    const { topTypes, career } = results;
+    const [medal1, medal2, medal3] = ['🥇', '🥈', '🥉'];
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 md:p-8">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-block p-4 bg-white rounded-full shadow-lg mb-6 animate-bounce">
+              <Award className="w-12 h-12 text-purple-600" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              🎉 검사 완료!
+            </h1>
+            <p className="text-xl text-gray-600">당신만의 흥미 코드를 발견했습니다</p>
+          </div>
+
+          {/* Interest Code Card */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-700 mb-6">나의 흥미 코드</h2>
+              <div className="flex justify-center items-center space-x-4 mb-8">
+                {topTypes.map((type, idx) => (
+                  <div key={type.type} className="text-center">
+                    <div className="text-4xl mb-2">{[medal1, medal2, medal3][idx]}</div>
+                    <div className={`${typeInfo[type.type].color} text-white px-8 py-4 rounded-2xl text-3xl font-bold shadow-lg`}>
+                      {type.type}
+                    </div>
+                    <div className="mt-2 font-bold text-gray-700">{typeInfo[type.type].name}</div>
+                    <div className="text-sm text-gray-500">{Math.round(type.percentage)}%</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Score Chart */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-8">
+              <h3 className="font-bold text-lg text-gray-800 mb-4 text-center">📊 흥미 유형 분석</h3>
+              <div className="space-y-3">
+                {results.allScores.map((item) => (
+                  <div key={item.type}>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-semibold text-gray-700">
+                        {typeInfo[item.type].name} ({item.type})
+                      </span>
+                      <span className="font-bold text-gray-800">{Math.round(item.percentage)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div
+                        className={`${typeInfo[item.type].color} h-4 rounded-full transition-all duration-1000`}
+                        style={{ width: `${item.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Character Card */}
+            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-8 text-center">
+              <div className="text-6xl mb-4">
+                {topTypes[0].type === 'I' && topTypes[1].type === 'A' ? '🔬🎨' :
+                 topTypes[0].type === 'I' && topTypes[1].type === 'E' ? '🔬💡' :
+                 topTypes[0].type === 'A' && topTypes[1].type === 'E' ? '🎨💡' :
+                 topTypes[0].type === 'S' && topTypes[1].type === 'E' ? '🤝💡' :
+                 topTypes[0].type === 'R' && topTypes[1].type === 'I' ? '⚙️🔬' :
+                 topTypes[0].type === 'R' && topTypes[1].type === 'S' ? '⚙️🤝' :
+                 topTypes[0].type === 'I' && topTypes[1].type === 'S' ? '🔬🤝' :
+                 topTypes[0].type === 'I' && topTypes[1].type === 'C' ? '🔬🗂️' :
+                 topTypes[0].type === 'A' && topTypes[1].type === 'S' ? '🎨🤝' :
+                 topTypes[0].type === 'A' && topTypes[1].type === 'C' ? '🎨🗂️' :
+                 topTypes[0].type === 'S' && topTypes[1].type === 'C' ? '🤝🗂️' :
+                 topTypes[0].type === 'E' && topTypes[1].type === 'C' ? '💡🗂️' :
+                 topTypes[0].type === 'R' && topTypes[1].type === 'A' ? '⚙️🎨' :
+                 topTypes[0].type === 'R' && topTypes[1].type === 'C' ? '⚙️🗂️' :
+                 topTypes[0].type === 'R' && topTypes[1].type === 'E' ? '⚙️💡' : '🌟'}
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                {typeInfo[topTypes[0].type].name} × {typeInfo[topTypes[1].type].name}
+              </h3>
+              <p className="text-gray-600 italic">당신만의 융합형 캐릭터</p>
+            </div>
+          </div>
+
+          {/* Career Path */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
+            <div className="text-center mb-8">
+              <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full text-sm font-bold mb-4">
+                추천 진로
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">{career.title}</h2>
+              <p className="text-gray-600">당신의 흥미와 미래 트렌드가 만나는 직업</p>
+            </div>
+
+            {/* Job List */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8">
+              <h3 className="font-bold text-lg text-gray-800 mb-4">💼 구체적 직업군</h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                {career.jobs.map((job, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm flex items-center space-x-3">
+                    <div className="bg-purple-100 rounded-full p-2">
+                      <ChevronRight className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <span className="font-semibold text-gray-700">{job}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Career Roadmap */}
+            <div className="mb-8">
+              <h3 className="font-bold text-xl text-gray-800 mb-6 text-center">🗺️ 진로 로드맵</h3>
+              <div className="space-y-4">
+                <div className="bg-green-50 border-l-4 border-green-500 rounded-r-xl p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-green-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 mb-2">고등학교 단계</h4>
+                      <p className="text-gray-700">{career.roadmap.high}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 mb-2">대학 단계</h4>
+                      <p className="text-gray-700">{career.roadmap.college}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-purple-50 border-l-4 border-purple-500 rounded-r-xl p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-purple-500 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold flex-shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 mb-2">경험 및 활동</h4>
+                      <p className="text-gray-700">{career.roadmap.experience}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Skills & Growth */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-6">
+                <h3 className="font-bold text-lg text-gray-800 mb-4">⚡ 핵심 역량</h3>
+                <div className="space-y-2">
+                  {career.skills.map((skill, idx) => (
+                    <div key={idx} className="flex items-center space-x-2">
+                      <div className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                        ✓
+                      </div>
+                      <span className="text-gray-700 font-semibold">{skill}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6">
+                <h3 className="font-bold text-lg text-gray-800 mb-4">📈 5년 후 전망</h3>
+                <div className="text-center">
+                  <div className="text-5xl font-bold text-green-600 mb-2">+{career.growth}%</div>
+                  <p className="text-gray-600">고용 증가율 예측</p>
+                  <div className="mt-4 bg-white rounded-full h-4">
+                    <div
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 h-4 rounded-full"
+                      style={{ width: `${career.growth}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Final Message */}
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl shadow-2xl p-8 md:p-12 text-center text-white mb-8">
+            <Sparkles className="w-16 h-16 mx-auto mb-4" />
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              당신의 흥미는 미래를 여는 열쇠입니다
+            </h2>
+            <p className="text-lg opacity-90 mb-6">
+              이 흥미 코드와 시대적 흐름을 결합하여,<br/>
+              세상에 단 하나뿐인 멋진 진로를 설계해보세요!
+            </p>
+          </div>
+
+          {/* Restart Button */}
+          <div className="text-center">
+            <button
+              onClick={() => {
+                setCurrentPage('intro');
+                setCurrentQuestion(0);
+                setAnswers({});
+                setResults(null);
+              }}
+              className="bg-white text-purple-600 px-8 py-4 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all inline-flex items-center space-x-3"
+            >
+              <Home className="w-6 h-6" />
+              <span>처음으로 돌아가기</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="font-sans">
+      {currentPage === 'intro' && <IntroPage />}
+      {currentPage === 'survey' && <SurveyPage />}
+      {currentPage === 'results' && <ResultsPage />}
+    </div>
+  );
+};
+
+export default CareerInterestSurvey;
